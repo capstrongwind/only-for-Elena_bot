@@ -1,15 +1,16 @@
-const {Telegraf} = require('telegraf');
-const {Router, Markup} = Telegraf;
+const { Telegraf } = require('telegraf');
+const { Router, Markup } = Telegraf;
 const session = require('telegraf/session')
 const createPollStage = require('./somePart/createPoll');
 const axios = require("axios");
 const isAdmin = require('./somePart/adminUser');
 const startPoll = require('./request/startPoll');
 const stopPoll = require('./request/stopPoll');
+const showResult = require('./request/showResult');
 
 
 // const idChannel = -1001169347047;
-const tokenBot = '1462648349:AAH2cuyphuVUU0PkaFblaD_Ea7JPZcNIQNI';
+const tokenBot = '1421299207:AAGet9IZPonFC3Eo77xGWp45MH-eyTRFRWw';
 const errorNotAdmin = 'Стопендра, тебе сюда нельзя!';
 
 const bot = new Telegraf(tokenBot, {
@@ -34,31 +35,34 @@ bot.command('/run', (ctx) => {
   if (!isAdmin(ctx)) return ctx.reply(errorNotAdmin);
   ctx.session.step = 'run';
   startPoll()
-  .then(() => {
-    ctx.reply('Запускаем, детка. Держись!!!');
-  })
+    .then(() => {
+      ctx.reply('Запускаем, детка. Держись!!!');
+    })
 })
 
 bot.command('/stop', (ctx) => {
   if (!isAdmin(ctx)) return ctx.reply(errorNotAdmin);
   ctx.session.step = 'stop';
   stopPoll()
-  .then(() => {
-    ctx.reply('Все опрос закрыт, больше никто никогда ничего не изменит! Ты красава в любом случае');
-  })
+    .then(() => {
+      ctx.reply('Все опрос закрыт, больше никто никогда ничего не изменит! Ты красава в любом случае');
+    })
 })
 
 bot.command('/result', (ctx) => {
   ctx.session.step = 'result';
-  ctx.reply('Получаем последние результаты');
-
-  return ctx.reply("Вот что ответили самые быстрые: \nмаруська любит помидор, \nванька - паровоз");
+  showResult()
+    .then(data => {
+      const text = data.questionToAnswerResponses.map(i => {
+        return `${i.userId} - ${i.answerContent}\n`;
+      })
+      ctx.reply(`Вот что ответили самые быстрые:\n${data.questionToAnswerResponses[0].questionContent}\n ${text.join('')}`);
+    })
 })
 
 alreadyAnswered = new Map();
 
 bot.command('gogogo', (ctx) => {
-    console.log("recevied")
     return axios.get(baseUrl + '/poll/current').then((response) => {
         if (response.data.status !== 'ACTIVE') {
             ctx.reply("Иди своей дорогой сталкер, тут нет ни одного активного опроса");

@@ -3,8 +3,8 @@
 const axios = require('axios');
 
 
-const stopPoll = function () {
-  return axios.put('http://172.104.236.107:8080/telegram/data/poll/stop')
+const showResult = function () {
+  return axios.get('http://172.104.236.107:8080/telegram/data/show')
     .then(function (response) {
       if (response.status === 200) {
         return response.data
@@ -16,4 +16,4 @@ const stopPoll = function () {
     });
 }
 
-module.exports = stopPoll;
+module.exports = showResult;

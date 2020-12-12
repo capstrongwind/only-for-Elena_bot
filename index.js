@@ -13,22 +13,28 @@ const bot = new Telegraf(tokenBot, {
 
 bot.use(session())
 
-bot.start(ctx => ctx.reply(`
-    Привет ${ctx.from.first_name}!"
-`))
-bot.catch((err, ctx) => {
-  console.log(`Ooops, encountered an error for ${ctx.updateType}`, err)
-})
+bot.start(ctx => ctx.reply(`Привет ${ctx.from.first_name}!"`))
+
+bot.catch((err, ctx) => console.log(`Ooops, encountered an error for ${ctx.updateType}`, err))
 
 bot.command('/create', (ctx) => {
   ctx.session.step = 'create';
   return ctx.reply('Ну давай свой вопрос, давай удивим всех');
 })
-bot.command('send', (ctx) => {
+
+bot.command('/send', (ctx) => {
   ctx.session.step = 'send';
   ctx.reply('Получаем последний сделанный опрос');
   ctx.reply('Шлем в тот канал');
   ctx.telegram.sendMessage(idChannel, "Ваш опрос красавчики!")
+  return ctx.reply('Шикос');
+})
+
+bot.command('/result', (ctx) => {
+  ctx.session.step = 'result';
+  ctx.reply('Получаем последние результаты');
+  ctx.reply('Шлем в тот канал');
+  ctx.telegram.sendMessage(idChannel, "Вот что ответили самые быстрые: \nмаруська любит помидор, \nванька - паровоз")
   return ctx.reply('Шикос');
 })
 

@@ -1,16 +1,19 @@
-const {options} = require('superagent');
 const {Telegraf} = require('telegraf');
 const {Router, Markup} = Telegraf;
 const session = require('telegraf/session')
 const createPollStage = require('./somePart/createPoll');
 const axios = require("axios");
+const isAdmin = require('./somePart/adminUser');
+const startPoll = require('./request/startPoll');
+const stopPoll = require('./request/stopPoll');
 
-const idChannel = -1001169347047;
-const tokenBot = '1462648349:AAH2cuyphuVUU0PkaFblaD_Ea7JPZcNIQNI';
 
+// const idChannel = -1001169347047;
+const tokenBot = '1421299207:AAGet9IZPonFC3Eo77xGWp45MH-eyTRFRWw';
+const errorNotAdmin = 'Стопендра, тебе сюда нельзя!';
 
 const bot = new Telegraf(tokenBot, {
-    channelMode: true,
+  channelMode: true,
 })
 
 const baseUrl = 'http://172.104.236.107:8080/telegram/data';
@@ -22,24 +25,34 @@ bot.start(ctx => ctx.reply(`Привет ${ctx.from.first_name}!"`))
 bot.catch((err, ctx) => console.log(`Ooops, encountered an error for ${ctx.updateType}`, err))
 
 bot.command('/create', (ctx) => {
-    ctx.session.step = 'create';
-    return ctx.reply('Ну давай свой вопрос, давай удивим всех');
+  if (!isAdmin(ctx)) return ctx.reply(errorNotAdmin);
+  ctx.session.step = 'create';
+  return ctx.reply('Ну давай свой вопрос, удивим всех');
 })
 
-bot.command('/send', (ctx) => {
-    ctx.session.step = 'send';
-    ctx.reply('Получаем последний сделанный опрос');
-    ctx.reply('Шлем в тот канал');
-    ctx.telegram.sendMessage(idChannel, "Ваш опрос красавчики!")
-    return ctx.reply('Шикос');
+bot.command('/run', (ctx) => {
+  if (!isAdmin(ctx)) return ctx.reply(errorNotAdmin);
+  ctx.session.step = 'run';
+  startPoll()
+  .then(() => {
+    ctx.reply('Запускаем, детка. Держись!!!');
+  })
+})
+
+bot.command('/stop', (ctx) => {
+  if (!isAdmin(ctx)) return ctx.reply(errorNotAdmin);
+  ctx.session.step = 'stop';
+  stopPoll()
+  .then(() => {
+    ctx.reply('Все опрос закрыт, больше никто никогда ничего не изменит! Ты красава в любом случае');
+  })
 })
 
 bot.command('/result', (ctx) => {
-    ctx.session.step = 'result';
-    ctx.reply('Получаем последние результаты');
-    ctx.reply('Шлем в тот канал');
-    ctx.telegram.sendMessage(idChannel, "Вот что ответили самые быстрые: \nмаруська любит помидор, \nванька - паровоз")
-    return ctx.reply('Шикос');
+  ctx.session.step = 'result';
+  ctx.reply('Получаем последние результаты');
+
+  return ctx.reply("Вот что ответили самые быстрые: \nмаруська любит помидор, \nванька - паровоз");
 })
 
 alreadyAnswered = new Map();
@@ -90,12 +103,13 @@ bot.command('gogogo', (ctx) => {
 })
 
 bot.on('text', (ctx) => {
-    if (['create', 'createAnswer'].includes(ctx.session.step)) {
-        createPollStage(ctx)
-    } else {
-        ctx.reply('Дружок, не тупи. Команды набери /send /create. Че там тебе хочется?');
-    }
+  if (['create', 'createAnswer'].includes(ctx.session.step)) {
+    createPollStage(ctx)
+  } else {
+    ctx.reply('Дружок, не тупи. Команды набери /create. Че там тебе хочется?');
+  }
 })
+
 
 
 bot.launch()

@@ -9,7 +9,7 @@ const stopPoll = require('./request/stopPoll');
 
 
 // const idChannel = -1001169347047;
-const tokenBot = '1421299207:AAGet9IZPonFC3Eo77xGWp45MH-eyTRFRWw';
+const tokenBot = '1462648349:AAH2cuyphuVUU0PkaFblaD_Ea7JPZcNIQNI';
 const errorNotAdmin = 'Стопендра, тебе сюда нельзя!';
 
 const bot = new Telegraf(tokenBot, {
@@ -58,7 +58,13 @@ bot.command('/result', (ctx) => {
 alreadyAnswered = new Map();
 
 bot.command('gogogo', (ctx) => {
+    console.log("recevied")
     return axios.get(baseUrl + '/poll/current').then((response) => {
+        if (response.data.status !== 'ACTIVE') {
+            ctx.reply("Иди своей дорогой сталкер, тут нет ни одного активного опроса");
+            return;
+        }
+
         const question = response.data.questions[0];
 
         const questionText = question.content;
@@ -88,7 +94,7 @@ bot.command('gogogo', (ctx) => {
                 let timeToAnswer = (new Date() - ctx.session.startTime) / 1000;
                 if (timeToAnswer < 3) {
                     axios.post(baseUrl + '/bind/answer', {
-                        userId: ctx.from.id, answerId: ctx.update.callback_query.data
+                        userId: ctx.from.username, answerId: ctx.update.callback_query.data
                     })
                     ctx.reply('Красаучег успел!')
                     delete ctx.session.startTime;

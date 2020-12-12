@@ -3,8 +3,11 @@ const { Router, Markup } = Telegraf;
 const session = require('telegraf/session')
 const createPollStage = require('./somePart/createPoll');
 const isAdmin = require('./somePart/adminUser');
+const startPoll = require('./request/startPoll');
+const stopPoll = require('./request/stopPoll');
 
-const idChannel = -1001169347047;
+
+// const idChannel = -1001169347047;
 const tokenBot = '1421299207:AAGet9IZPonFC3Eo77xGWp45MH-eyTRFRWw';
 const errorNotAdmin = 'Стопендра, тебе сюда нельзя!';
 
@@ -27,23 +30,26 @@ bot.command('/create', (ctx) => {
 bot.command('/run', (ctx) => {
   if (!isAdmin(ctx)) return ctx.reply(errorNotAdmin);
   ctx.session.step = 'run';
-  
-  return ctx.reply('Запускаем, детка. Держись!!!');
+  startPoll()
+  .then(() => {
+    ctx.reply('Запускаем, детка. Держись!!!');
+  })
 })
 
 bot.command('/stop', (ctx) => {
   if (!isAdmin(ctx)) return ctx.reply(errorNotAdmin);
   ctx.session.step = 'stop';
-  
-  return ctx.reply('Все опрос закрыт, больше никто никогда ничего не изменит! Ты красава в любом случае');
+  stopPoll()
+  .then(() => {
+    ctx.reply('Все опрос закрыт, больше никто никогда ничего не изменит! Ты красава в любом случае');
+  })
 })
 
 bot.command('/result', (ctx) => {
   ctx.session.step = 'result';
   ctx.reply('Получаем последние результаты');
-  ctx.reply('Шлем в тот канал');
-  ctx.telegram.sendMessage(idChannel, "Вот что ответили самые быстрые: \nмаруська любит помидор, \nванька - паровоз")
-  return ctx.reply('Шикос');
+
+  return ctx.reply("Вот что ответили самые быстрые: \nмаруська любит помидор, \nванька - паровоз");
 })
 
 bot.command('gogogo', (ctx) => {

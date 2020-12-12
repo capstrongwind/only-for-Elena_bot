@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.21.0",
     "covid19-api": "^1.2.1",
     "telegraf": "^3.38.0"
   }

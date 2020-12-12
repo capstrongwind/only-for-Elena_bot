@@ -1,5 +1,6 @@
 const { options } = require('superagent');
 const { Telegraf } = require('telegraf');
+const { Router, Markup } = Telegraf;
 const session = require('telegraf/session')
 
 const idChannel = -1001169347047;
@@ -11,7 +12,7 @@ const bot = new Telegraf(tokenBot, {
 })
 
 bot.start(ctx => ctx.reply(`
-    Привет ${ctx.from.first_name}!"
+    Привет ${ctx.from.first_name}! Набери /start для запуска опроса, у тебя будет 3 секунды чтобы ответить, не задумывайся!"
 `))
 bot.catch((err, ctx) => {
     console.log(`Ooops, encountered an error for ${ctx.updateType}`, err)
@@ -26,6 +27,35 @@ bot.command('send', (ctx) => {
     ctx.reply('Шлем в тот канал');
     ctx.telegram.sendMessage(idChannel, "Ваш опрос красавчики!")
     return ctx.reply('Шикос');
+})
+
+bot.command('gogogo', (ctx) => {
+
+    const question = "Как чё?";
+
+    const answers = [
+        {text: 'Че', id: "UUID1"},
+        {text: 'Как', id: "UUID2"},
+        {text: 'Че Как', id: "UUID3"}
+    ]
+
+    const inlineMessageRatingKeyboard = Markup.inlineKeyboard(
+        answers.map((answer) => Markup.callbackButton(answer.text, answer.id))).extra()
+
+    const startTime = new Date();
+
+    answers.forEach((answer) => {
+        bot.action(answer.id, (ctx) => {
+            let timeToAnswer = (new Date() - startTime)/1000;
+            if (timeToAnswer < 3) {
+                ctx.reply('Красаучег успел!')
+            } else {
+                ctx.reply('Медаль сутулого слоупоку! Тупил ' + timeToAnswer)
+            }
+        })
+    })
+
+    ctx.telegram.sendMessage(ctx.chat.id, question, inlineMessageRatingKeyboard);
 })
 
 bot.on('text', (ctx) => {

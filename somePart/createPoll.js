@@ -1,8 +1,10 @@
 
 const createPoll = require('../request/createPoll');
 const createAnswer = require('../request/createAnswer');
+const isAdmin = require('../somePart/adminUser')
 
 const createPollStage = function (ctx) {
+  if (!isAdmin(ctx)) return ctx.reply('Тормози братуха, тебе сюда нельзя!');
   // TODO do it with SCENE... after
   let text = ''
   switch (ctx.session.step) {
@@ -26,7 +28,7 @@ const createPollStage = function (ctx) {
       createAnswer(ctx.session.pollId, ctx.session.qweId, ctx.message.text)
         .then(ans => {
           if (ans) {
-            ctx.reply("Нормалды все сохранилось! Давай еще вариантов, или отправляй в канал /send")
+            ctx.reply("Нормалды все сохранилось! Давай еще вариантов, или отправляй в канал /run")
           } else {
             ctx.reply("че-то не получилось")
           }

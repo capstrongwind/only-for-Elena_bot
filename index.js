@@ -15,17 +15,42 @@ bot.start(ctx => ctx.reply(`
 `))
 bot.catch((err, ctx) => {
     console.log(`Ooops, encountered an error for ${ctx.updateType}`, err)
-  })
+})
 
 bot.use(session())
+bot.command('/create', (ctx) => {
+    ctx.session.step = 'create';
+})
+bot.command('send', (ctx) => {
+    ctx.reply('Получаем последний сделанный опрос');
+    ctx.reply('Шлем в тот канал');
+    ctx.telegram.sendMessage(idChannel, "Ваш опрос красавчики!")
+    return ctx.reply('Шикос');
+})
+
 bot.on('text', (ctx) => {
-  ctx.session.counter = ctx.session.counter || 0
-  ctx.session.counter++
-  ctx.telegram.sendMessage(idChannel, 'jhjhj')
-  return ctx.reply(`Message counter:${ctx.session.counter} ${ctx.message.chat.id}`)
+    // TODO do it with SCENE... after
+    let text = ''
+    switch (ctx.session.step) {
+        case 'create': {
+            text = `Вопрос: ${ctx.message.text}`;
+            ctx.session.step = 'createAnswer';
+            break;
+        }
+        case 'createAnswer': {
+            text = `Вариант ответа: ${ctx.message.text}`;
+            break;
+        }
+        default: {
+            return ctx.reply('ЧЁ????');
+        }
+    }
+    // send to API!
+
+    // ctx.telegram.sendMessage(idChannel, text)
+    return ctx.reply(text);
 })
-bot.action('create', (ctx) => {
-    console.log(`Ooops`) 
-})
+
+
 
 bot.launch()

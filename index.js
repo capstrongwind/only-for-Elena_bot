@@ -98,7 +98,7 @@ bot.command('gogogo', (ctx) => {
                 let timeToAnswer = (new Date() - ctx.session.startTime) / 1000;
                 if (timeToAnswer < 3) {
                     axios.post(baseUrl + '/bind/answer', {
-                        userId: ctx.from.username, answerId: ctx.update.callback_query.data
+                        userId: `${ctx.from.username} ${ctx.from.first_name} ${ctx.from.last_name}`, answerId: ctx.update.callback_query.data
                     })
                     ctx.reply('Красаучег успел!')
                     delete ctx.session.startTime;
